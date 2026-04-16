@@ -1,0 +1,11 @@
+{
+  "name": "css-builder",
+  "type": "module",
+  "scripts": {
+    "build:120": "node build.js ../../versions/v120/main.css ../../versions/v120/_build.css",
+    "build:200": "node build.js ../../versions/v200/main.css ../../versions/v200/_build.css"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}

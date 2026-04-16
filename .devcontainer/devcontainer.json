@@ -1,0 +1,13 @@
+{
+  "name": "VoirAnime DarkMod devcontainer",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+      ]
+    }
+  },
+  "remoteUser": "node"
+}
