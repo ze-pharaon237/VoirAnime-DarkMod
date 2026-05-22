@@ -33,10 +33,6 @@
         return l;
     };
 
-    const removeInjected = () => {
-        document.querySelectorAll(`link[rel="stylesheet"][${CUSTOM_ATTR}], style[${CUSTOM_ATTR}]`).forEach(el => el.remove());
-    };
-
     const injectV2Main = () => {
         URLS.v2.main.forEach(href => {
             if (!HEAD.querySelector(`link[href="${href}"]`)) {
@@ -45,17 +41,11 @@
         });
     };
 
-    injectV2Main();
-    HEAD.querySelectorAll('link[rel="stylesheet"], style').forEach(el => {
-        if (!el.hasAttribute(CUSTOM_ATTR)) {
-            if (el.tagName === 'LINK') el.disabled = true;
-            else el.remove();
-        }
-    });
-
     const applyV2 = () => {
+        injectV2Main();
+
         HEAD.querySelectorAll(`link[rel=\"stylesheet\"]:not([${CUSTOM_ATTR}]), style:not([${CUSTOM_ATTR}])`)
-            .forEach(el => el.tagName === 'LINK' ? el.disabled = true : el.remove());
+            .forEach(el => el.remove());
 
         if (URLS.listPattern.test(location.href) && !HEAD.querySelector(`link[href="${URLS.v2.list}"]`)) {
             HEAD.appendChild(createLink(URLS.v2.list));
@@ -82,17 +72,23 @@
     const observerV2 = new MutationObserver(records => {
         records.forEach(rec => rec.addedNodes.forEach(n => {
             if (n.nodeType === 1) {
-                if (n.matches(`link[rel=\"stylesheet\"]:not([${CUSTOM_ATTR}])`)) n.disabled = true;
+                if (n.matches(`link[rel=\"stylesheet\"]:not([${CUSTOM_ATTR}])`)) n.remove();
                 else if (n.matches('style:not([data-custom-style])')) n.remove();
             }
         }));
     });
 
+    const disableAntiflashStyle = () => {
+        setTimeout(() => {
+            document.documentElement.style.visibility = "visible";
+        }, 100)
+    }
+
     function init() {
         chrome.storage.sync.get(config, data => {
             config = data;
             if (!config.enabled) {
-                removeInjected();
+                disableAntiflashStyle();
                 return;
             }
 
@@ -100,9 +96,9 @@
                 applyV2();
                 observerV2.observe(HEAD, { childList: true, subtree: true });
             } else {
-                removeInjected();
                 applyV1();
             }
+            disableAntiflashStyle();
         });
 
         chrome.storage.onChanged.addListener((changes, area) => {
